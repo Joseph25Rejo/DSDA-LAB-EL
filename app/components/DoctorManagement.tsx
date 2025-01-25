@@ -38,7 +38,7 @@ export default function DoctorManagement() {
           <CardTitle>Doctor Management</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex space-x-4 mb-4">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="flex-1">
               <Label htmlFor="search">Search Doctors</Label>
               <Input
@@ -66,28 +66,30 @@ export default function DoctorManagement() {
             </div>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Specialization</TableHead>
-                <TableHead>Availability</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDoctors.map((doctor) => (
-                <TableRow key={doctor.id}>
-                  <TableCell>{doctor.name}</TableCell>
-                  <TableCell>{doctor.specialization}</TableCell>
-                  <TableCell>{doctor.availability.join(", ")}</TableCell>
-                  <TableCell>
-                    <Button onClick={() => setSelectedDoctor(doctor)}>View Appointments</Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Specialization</TableHead>
+                  <TableHead>Availability</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredDoctors.map((doctor) => (
+                  <TableRow key={doctor.id}>
+                    <TableCell>{doctor.name}</TableCell>
+                    <TableCell>{doctor.specialization}</TableCell>
+                    <TableCell>{doctor.availability.join(", ")}</TableCell>
+                    <TableCell>
+                      <Button onClick={() => setSelectedDoctor(doctor)}>View Appointments</Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

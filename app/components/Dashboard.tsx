@@ -5,6 +5,7 @@ import { useHospital } from "../../lib/HospitalContext"
 import PatientManagement from "./PatientManagement"
 import DoctorManagement from "./DoctorManagement"
 import AppointmentBooking from "./AppointmentBooking"
+import EmergencyButton from "./EmergencyButton"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -48,8 +49,10 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      <EmergencyButton />
+
       <Tabs defaultValue="patients" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-0">
           <TabsTrigger value="patients">Patient Management</TabsTrigger>
           <TabsTrigger value="doctors">Doctor Management</TabsTrigger>
           <TabsTrigger value="appointments">Appointment Booking</TabsTrigger>

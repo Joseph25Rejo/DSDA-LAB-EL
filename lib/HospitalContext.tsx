@@ -2,26 +2,31 @@
 
 import type React from "react"
 import { createContext, useState, useContext, type ReactNode } from "react"
-import type { Patient, Doctor, Appointment } from "./types"
-import { dummyDoctors } from "./dummyData"
+import type { Patient, Doctor, Appointment, DoctorRequest } from "./types"
+import { dummyDoctors, dummyPatients } from "./dummyData"
 
 interface HospitalContextType {
   patients: Patient[]
   doctors: Doctor[]
   appointments: Appointment[]
+  doctorRequests: DoctorRequest[]
   addPatient: (patient: Patient) => void
   updatePatient: (patient: Patient) => void
   deletePatient: (id: string) => void
   bookAppointment: (appointment: Appointment) => void
   updateAppointment: (appointment: Appointment) => void
+  bookEmergencyAppointment: (patientId: string) => Promise<Appointment | null>
+  requestDoctor: (request: Omit<DoctorRequest, "id" | "status">) => void
+  updateDoctorRequest: (request: DoctorRequest) => void
 }
 
 const HospitalContext = createContext<HospitalContextType | undefined>(undefined)
 
 export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [patients, setPatients] = useState<Patient[]>([])
+  const [patients, setPatients] = useState<Patient[]>(dummyPatients)
   const [doctors] = useState<Doctor[]>(dummyDoctors)
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [doctorRequests, setDoctorRequests] = useState<DoctorRequest[]>([])
 
   const addPatient = (patient: Patient) => {
     setPatients([...patients, patient])
@@ -43,17 +48,61 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     setAppointments(appointments.map((a) => (a.id === updatedAppointment.id ? updatedAppointment : a)))
   }
 
+  const bookEmergencyAppointment = async (patientId: string): Promise<Appointment | null> => {
+    const generalMedicineDoctors = doctors.filter((d) => d.specialization === "General Medicine")
+    if (generalMedicineDoctors.length === 0) return null
+
+    const doctorAppointments = generalMedicineDoctors.map((d) => ({
+      doctor: d,
+      appointmentCount: appointments.filter((a) => a.doctorId === d.id).length,
+    }))
+
+    const mostAvailableDoctor = doctorAppointments.reduce((prev, curr) =>
+      prev.appointmentCount <= curr.appointmentCount ? prev : curr,
+    ).doctor
+
+    const newAppointment: Appointment = {
+      id: Date.now().toString(),
+      patientId,
+      doctorId: mostAvailableDoctor.id,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toTimeString().split(" ")[0],
+      status: "Emergency",
+      isEmergency: true,
+    }
+
+    setAppointments([...appointments, newAppointment])
+    return newAppointment
+  }
+
+  const requestDoctor = (request: Omit<DoctorRequest, "id" | "status">) => {
+    const newRequest: DoctorRequest = {
+      ...request,
+      id: Date.now().toString(),
+      status: "Pending",
+    }
+    setDoctorRequests([...doctorRequests, newRequest])
+  }
+
+  const updateDoctorRequest = (updatedRequest: DoctorRequest) => {
+    setDoctorRequests(doctorRequests.map((r) => (r.id === updatedRequest.id ? updatedRequest : r)))
+  }
+
   return (
     <HospitalContext.Provider
       value={{
         patients,
         doctors,
         appointments,
+        doctorRequests,
         addPatient,
         updatePatient,
         deletePatient,
         bookAppointment,
         updateAppointment,
+        bookEmergencyAppointment,
+        requestDoctor,
+        updateDoctorRequest,
       }}
     >
       {children}

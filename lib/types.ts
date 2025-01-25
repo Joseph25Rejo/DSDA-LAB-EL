@@ -18,6 +18,16 @@ export interface Appointment {
   patientId: string
   doctorId: string
   date: string
-  status: "Pending" | "Accepted" | "Cancelled"
+  time: string
+  status: "Pending" | "Accepted" | "Cancelled" | "Emergency"
+  isEmergency?: boolean
+}
+
+export interface DoctorRequest {
+  id: string
+  patientId: string
+  doctorId: string
+  status: "Pending" | "Accepted" | "Declined"
+  note?: string
 }
 
