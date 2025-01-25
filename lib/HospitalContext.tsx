@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { createContext, useState, useContext, type ReactNode } from "react"
-import type { Patient, Doctor, Appointment, DoctorRequest } from "./types"
+import type { Patient, Doctor, Appointment, DoctorRequest, EmergencyDetails } from "./types"
 import { dummyDoctors, dummyPatients } from "./dummyData"
 
 interface HospitalContextType {
@@ -15,7 +15,7 @@ interface HospitalContextType {
   deletePatient: (id: string) => void
   bookAppointment: (appointment: Appointment) => void
   updateAppointment: (appointment: Appointment) => void
-  bookEmergencyAppointment: (patientId: string) => Promise<Appointment | null>
+  bookEmergencyAppointment: (patientId: string, preferredDoctorId?: string, emergencyDetails?: EmergencyDetails) => Promise<Appointment | null>
   requestDoctor: (request: Omit<DoctorRequest, "id" | "status">) => void
   updateDoctorRequest: (request: DoctorRequest) => void
 }
@@ -48,27 +48,40 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
     setAppointments(appointments.map((a) => (a.id === updatedAppointment.id ? updatedAppointment : a)))
   }
 
-  const bookEmergencyAppointment = async (patientId: string): Promise<Appointment | null> => {
-    const generalMedicineDoctors = doctors.filter((d) => d.specialization === "General Medicine")
-    if (generalMedicineDoctors.length === 0) return null
+  const bookEmergencyAppointment = async (
+    patientId: string, 
+    preferredDoctorId?: string,
+    emergencyDetails?: EmergencyDetails
+  ): Promise<Appointment | null> => {
+    let selectedDoctor: Doctor | null = null
 
-    const doctorAppointments = generalMedicineDoctors.map((d) => ({
-      doctor: d,
-      appointmentCount: appointments.filter((a) => a.doctorId === d.id).length,
-    }))
+    if (preferredDoctorId) {
+      selectedDoctor = doctors.find(d => d.id === preferredDoctorId) || null
+    }
 
-    const mostAvailableDoctor = doctorAppointments.reduce((prev, curr) =>
-      prev.appointmentCount <= curr.appointmentCount ? prev : curr,
-    ).doctor
+    if (!selectedDoctor) {
+      const generalMedicineDoctors = doctors.filter((d) => d.specialization === "General Medicine")
+      if (generalMedicineDoctors.length === 0) return null
+
+      const doctorAppointments = generalMedicineDoctors.map((d) => ({
+        doctor: d,
+        appointmentCount: appointments.filter((a) => a.doctorId === d.id).length,
+      }))
+
+      selectedDoctor = doctorAppointments.reduce((prev, curr) =>
+        prev.appointmentCount <= curr.appointmentCount ? prev : curr,
+      ).doctor
+    }
 
     const newAppointment: Appointment = {
       id: Date.now().toString(),
       patientId,
-      doctorId: mostAvailableDoctor.id,
+      doctorId: selectedDoctor.id,
       date: new Date().toISOString().split("T")[0],
       time: new Date().toTimeString().split(" ")[0],
       status: "Emergency",
       isEmergency: true,
+      emergencyDetails
     }
 
     setAppointments([...appointments, newAppointment])
@@ -117,4 +130,3 @@ export const useHospital = () => {
   }
   return context
 }
-

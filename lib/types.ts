@@ -13,6 +13,11 @@ export interface Doctor {
   availability: string[]
 }
 
+export interface EmergencyDetails {
+  reason: string
+  priority: "High" | "Medium" | "Low"
+}
+
 export interface Appointment {
   id: string
   patientId: string
@@ -21,6 +26,7 @@ export interface Appointment {
   time: string
   status: "Pending" | "Accepted" | "Cancelled" | "Emergency"
   isEmergency?: boolean
+  emergencyDetails?: EmergencyDetails
 }
 
 export interface DoctorRequest {
@@ -30,4 +36,3 @@ export interface DoctorRequest {
   status: "Pending" | "Accepted" | "Declined"
   note?: string
 }
-

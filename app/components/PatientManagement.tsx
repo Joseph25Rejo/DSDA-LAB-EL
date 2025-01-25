@@ -2,31 +2,53 @@
 
 import { useState } from "react"
 import { useHospital } from "../../lib/HospitalContext"
-import type { Patient } from "../../lib/types"
+import type { Patient, Doctor } from "../../lib/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Switch } from "@/components/ui/switch"
+import { AlertCircle } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function PatientManagement() {
-  const { patients, addPatient, updatePatient, deletePatient } = useHospital()
+  const { patients, doctors, addPatient, updatePatient, deletePatient, bookEmergencyAppointment } = useHospital()
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
+  const [isEmergency, setIsEmergency] = useState(false)
+  const [selectedDoctor, setSelectedDoctor] = useState<string>("")
   const [newPatient, setNewPatient] = useState<Omit<Patient, "id">>({
     name: "",
     age: 0,
     gender: "Male",
     condition: "",
   })
+  const [emergencyReason, setEmergencyReason] = useState("")
+  const [emergencyPriority, setEmergencyPriority] = useState<"High" | "Medium" | "Low">("Medium")
 
-  const handleAddPatient = () => {
+  const handleAddPatient = async () => {
     const patient: Patient = {
       ...newPatient,
       id: Date.now().toString(),
     }
     addPatient(patient)
+
+    if (isEmergency) {
+      const appointment = await bookEmergencyAppointment(patient.id, selectedDoctor, {
+        reason: emergencyReason,
+        priority: emergencyPriority,
+      })
+      if (appointment) {
+        alert("Emergency appointment booked successfully!")
+      }
+    }
+
     setNewPatient({ name: "", age: 0, gender: "Male", condition: "" })
+    setIsEmergency(false)
+    setSelectedDoctor("")
+    setEmergencyReason("")
+    setEmergencyPriority("Medium")
   }
 
   const handleUpdatePatient = () => {
@@ -99,7 +121,83 @@ export default function PatientManagement() {
                 />
               </div>
             </div>
-            <Button type="submit">Add Patient</Button>
+
+            {/* Emergency Section */}
+            <div className="border rounded-lg p-4 space-y-4 bg-muted/20">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={isEmergency}
+                  onCheckedChange={setIsEmergency}
+                  id="emergency-mode"
+                />
+                <Label htmlFor="emergency-mode" className="font-semibold">Emergency Admission</Label>
+              </div>
+
+              {isEmergency && (
+                <div className="space-y-4">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Emergency Mode Activated</AlertTitle>
+                    <AlertDescription>
+                      This patient will be marked for immediate attention. Please provide additional details.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="emergency-reason">Emergency Reason</Label>
+                    <Input
+                      id="emergency-reason"
+                      value={emergencyReason}
+                      onChange={(e) => setEmergencyReason(e.target.value)}
+                      placeholder="Describe the emergency situation"
+                      required={isEmergency}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="emergency-priority">Priority Level</Label>
+                    <Select
+                      value={emergencyPriority}
+                      onValueChange={(value) => setEmergencyPriority(value as "High" | "Medium" | "Low")}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="High">High Priority</SelectItem>
+                        <SelectItem value="Medium">Medium Priority</SelectItem>
+                        <SelectItem value="Low">Low Priority</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="preferred-doctor">Preferred Doctor</Label>
+                    <Select
+                      value={selectedDoctor}
+                      onValueChange={setSelectedDoctor}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select preferred doctor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {doctors
+                          .filter(d => d.specialization === "General Medicine")
+                          .map((doctor) => (
+                            <SelectItem key={doctor.id} value={doctor.id}>
+                              {doctor.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Button type="submit">
+              {isEmergency ? "Add Patient & Book Emergency Appointment" : "Add Patient"}
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -216,4 +314,3 @@ export default function PatientManagement() {
     </div>
   )
 }
-
