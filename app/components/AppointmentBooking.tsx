@@ -18,7 +18,7 @@ export default function AppointmentBooking() {
   const { patients, doctors, appointments, bookAppointment, requestDoctor } = useHospital()
   const [newAppointment, setNewAppointment] = useState({
     patientId: "",
-    doctorId: "",
+    doctorName: "",
     date: "",
     time: "",
   })

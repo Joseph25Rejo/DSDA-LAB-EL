@@ -96,7 +96,7 @@ export default function DoctorManagement() {
       {selectedDoctor && (
         <Card>
           <CardHeader>
-            <CardTitle>Appointments for Dr. {selectedDoctor.name}</CardTitle>
+            <CardTitle>Appointments for {selectedDoctor.name}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>

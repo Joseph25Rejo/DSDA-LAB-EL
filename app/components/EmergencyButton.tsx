@@ -24,7 +24,7 @@ export default function EmergencyButton() {
       const result = await bookEmergencyAppointment(selectedPatient)
       if (result) {
         setEmergencyResult(
-          `Emergency appointment booked with Dr. ${result.doctorId} for ${result.date} at ${result.time}`,
+          `Emergency appointment booked with ${result.date} at ${result.time}. Report to Appointment booking station at the said time`,
         )
       } else {
         setEmergencyResult("No available doctors for emergency. Please try again later.")

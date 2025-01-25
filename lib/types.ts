@@ -21,7 +21,7 @@ export interface EmergencyDetails {
 export interface Appointment {
   id: string
   patientId: string
-  doctorId: string
+  doctorId: string,
   date: string
   time: string
   status: "Pending" | "Accepted" | "Cancelled" | "Emergency"
