@@ -4,7 +4,7 @@ try {
   userConfig = require('./v0-user-next.config');
 } catch (e) {
   // Ignore error but log it for debugging
-  console.log('User config not found, using default config:', e);
+  console.log();
 }
 
 /** @type {import('next').NextConfig} */
